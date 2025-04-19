@@ -1,0 +1,88 @@
+{
+  "templates": [
+    {
+      "id": "1",
+      "name": "Шаблон 1",
+      "description": "Описание шаблона 1",
+      "author": "Автор 1",
+      "license": "MIT",
+      "price": "1000",
+      "blocks": [
+        {
+          "type": "header",
+          "content": "Шапка сайта"
+        },
+        {
+          "type": "main",
+          "content": "Основной контент"
+        },
+        {
+          "type": "footer",
+          "content": "Подвал сайта"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Шаблон 2",
+      "description": "Описание шаблона 2",
+      "author": "Автор 2",
+      "license": "GPL",
+      "price": "1500",
+      "blocks": [
+        {
+          "type": "header",
+          "content": "Шапка для шаблона 2"
+        },
+        {
+          "type": "image",
+          "content": "url/to/image.jpg"
+        },
+        {
+          "type": "footer",
+          "content": "Подвал для шаблона 2"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Шаблон 3",
+      "description": "Описание шаблона 3",
+      "author": "Автор 3",
+      "license": "MIT",
+      "price": "1200",
+      "blocks": [
+        {
+          "type": "header",
+          "content": "Шапка сайта 3"
+        },
+        {
+          "type": "main",
+          "content": "Основной контент для шаблона 3"
+        },
+        {
+          "type": "footer",
+          "content": "Подвал сайта 3"
+        }
+      ]
+    }
+  ],
+  "landings": [
+    {
+      "id": "da42",
+      "templateId": "1",
+      "blocks": [
+        {
+          "name": "Заголовок",
+          "type": "text",
+          "value": "Привет, мир!"
+        },
+        {
+          "name": "Изображение",
+          "type": "image",
+          "value": "http://example.com/image.jpg"
+        }
+      ]
+    }
+  ]
+}
