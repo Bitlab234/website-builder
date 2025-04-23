@@ -22,19 +22,7 @@
     <div v-if="selectedBlocks.length > 0" class="landing-preview">
       <h2>Предпросмотр лендинга</h2>
       <div v-for="(block, index) in selectedBlocks" :key="'preview-' + index">
-        <div v-if="block.type === 'header'">
-          <!-- Динамически загружаем компонент шапки -->
-          <component :is="componentMap['Header1']" />
-        </div>
-        <div v-else-if="block.type === 'main'">
-          <p>{{ block.content }}</p>
-        </div>
-        <div v-else-if="block.type === 'footer'">
-          <footer>{{ block.content }}</footer>
-        </div>
-        <div v-else-if="block.type === 'image'">
-          <img :src="block.content" alt="Image Block" />
-        </div>
+        <component :is="componentMap[block.component]" :block="block" />
       </div>
     </div>
 
@@ -50,6 +38,7 @@ import axios from 'axios';
 interface Block {
   type: string;
   content: string;
+  component?: string; // Добавим свойство для компонента
 }
 
 interface Template {
@@ -70,8 +59,9 @@ export default {
 
     // Динамически импортируем компоненты для блоков
     const componentMap = {
-      Header1: defineAsyncComponent(() => import('@/components/ComponentOne.vue')),  // Динамический импорт для Header1
+      Header1: defineAsyncComponent(() => import('@/components/ComponentOne.vue')),
       Header2: defineAsyncComponent(() => import('@/components/ComponentTwo.vue')),
+      Main1: defineAsyncComponent(() => import('@/components/div1_1.vue')),
     };
 
     // Функция для получения шаблона из базы данных

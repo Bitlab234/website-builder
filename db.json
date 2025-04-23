@@ -14,7 +14,7 @@
         },
         {
           "type": "main",
-          "content": "Основной контент"
+          "component": "Main1"
         },
         {
           "type": "footer",
