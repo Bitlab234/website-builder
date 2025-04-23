@@ -34,6 +34,7 @@
 import { ref, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
+import { componentMap } from '@/utils/componentMap';
 
 interface Block {
   type: string;
@@ -56,13 +57,6 @@ export default {
 
     const template = ref<Template | null>(null);
     const selectedBlocks = ref<Block[]>([]);
-
-    // Динамически импортируем компоненты для блоков
-    const componentMap = {
-      Header1: defineAsyncComponent(() => import('@/components/ComponentOne.vue')),
-      Header2: defineAsyncComponent(() => import('@/components/ComponentTwo.vue')),
-      Main1: defineAsyncComponent(() => import('@/components/div1_1.vue')),
-    };
 
     // Функция для получения шаблона из базы данных
     const fetchTemplate = async () => {
