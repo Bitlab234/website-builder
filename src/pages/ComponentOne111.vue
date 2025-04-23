@@ -1,5 +1,5 @@
 <template>
-    <div class="header">Это шапка 1</div>
+    <header class="header">Это шапка 1</header>
 </template>
   
   <style scoped>

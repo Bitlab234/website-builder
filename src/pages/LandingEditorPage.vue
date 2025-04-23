@@ -1,4 +1,5 @@
 <template>
+  <div>you nice man</div>
   <div class="landing-builder">
     <h1>Создание лендинга</h1>
 
@@ -22,7 +23,8 @@
       <h2>Предпросмотр лендинга</h2>
       <div v-for="(block, index) in selectedBlocks" :key="'preview-' + index">
         <div v-if="block.type === 'header'">
-          <h3>{{ block.content }}</h3>
+          <!-- Динамически загружаем компонент шапки -->
+          <component :is="componentMap['Header1']" />
         </div>
         <div v-else-if="block.type === 'main'">
           <p>{{ block.content }}</p>
@@ -41,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
@@ -66,6 +68,13 @@ export default {
     const template = ref<Template | null>(null);
     const selectedBlocks = ref<Block[]>([]);
 
+    // Динамически импортируем компоненты для блоков
+    const componentMap = {
+      Header1: defineAsyncComponent(() => import('@/components/ComponentOne.vue')),  // Динамический импорт для Header1
+      Header2: defineAsyncComponent(() => import('@/components/ComponentTwo.vue')),
+    };
+
+    // Функция для получения шаблона из базы данных
     const fetchTemplate = async () => {
       try {
         const res = await axios.get(`http://localhost:3000/templates/${templateId}`);
@@ -75,6 +84,7 @@ export default {
       }
     };
 
+    // Функция для создания лендинга
     const createLanding = async () => {
       try {
         await axios.post('http://localhost:3000/landings', {
@@ -88,12 +98,13 @@ export default {
       }
     };
 
-    onMounted(fetchTemplate);
+    onMounted(fetchTemplate);  // Загружаем шаблон при монтировании компонента
 
     return {
       template,
       selectedBlocks,
       createLanding,
+      componentMap,  // Возвращаем компонент для динамической загрузки
     };
   },
 };

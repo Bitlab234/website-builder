@@ -10,7 +10,7 @@
       "blocks": [
         {
           "type": "header",
-          "content": "Шапка сайта"
+          "component": "Header1"
         },
         {
           "type": "main",
@@ -32,7 +32,7 @@
       "blocks": [
         {
           "type": "header",
-          "content": "Шапка для шаблона 2"
+          "component": "Header2"
         },
         {
           "type": "image",

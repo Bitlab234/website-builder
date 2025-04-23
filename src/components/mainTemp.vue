@@ -1,4 +1,5 @@
 <template>
+    <ComponentOne1 />
     <div>
         <button @click="setCurrentComponent('ComponentOne')">Показать 1</button>
         <button @click="setCurrentComponent('ComponentTwo')">Показать 2</button>
@@ -11,6 +12,7 @@
 
 <script setup lang="ts">
 import { ref, defineAsyncComponent, shallowRef } from 'vue';
+import ComponentOne1 from './ComponentOne.vue'
 
 // Создаём объект с компонентами, которые будут загружаться динамически
 const components = {

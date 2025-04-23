@@ -1,97 +1,52 @@
 <template>
     <div class="landing-builder">
-        <h1>Создание лендинга</h1>
-
-        <div class="template-selection">
-            <h2>Выберите шаблон</h2>
-            <div class="template" v-for="template in templates" :key="template.id">
-                <input type="radio" :id="template.id" v-model="selectedTemplateId" :value="template.id" />
-                <label :for="template.id">{{ template.name }}</label>
-            </div>
+      <h1>Создание лендинга</h1>
+  
+      <div v-if="selectedTemplate" class="landing-preview">
+        <h2>Предпросмотр лендинга</h2>
+  
+        <div v-for="(block, index) in selectedTemplate.blocks" :key="index">
+          <!-- Отображаем компонент, если указан -->
+          <component
+            v-if="block.component"
+            :is="componentMap[block.component]"
+          />
+          
+          <!-- Отображаем контент, если указан -->
+          <div v-else-if="block.type === 'main'">
+            <p>{{ block.content }}</p>
+          </div>
         </div>
-
-        <div v-if="selectedTemplateId" class="block-selection">
-            <h2>Выберите блоки для лендинга</h2>
-            <div class="block" v-for="block in selectedTemplate.blocks" :key="block.type">
-                <input type="checkbox" :id="block.type" v-model="selectedBlocks" :value="block" />
-                <label :for="block.type">{{ block.type }}: {{ block.content }}</label>
-            </div>
-        </div>
-
-        <div v-if="selectedBlocks.length > 0" class="landing-preview">
-            <h2>Предпросмотр лендинга</h2>
-            <div v-for="block in selectedBlocks" :key="block.type">
-                <div v-if="block.type === 'header'">
-                    <h3>{{ block.content }}</h3>
-                </div>
-                <div v-if="block.type === 'footer'">
-                    <footer>{{ block.content }}</footer>
-                </div>
-                <div v-if="block.type === 'main'">
-                    <p>{{ block.content }}</p>
-                </div>
-                <div v-if="block.type === 'image'">
-                    <img :src="block.content" alt="Image Block" />
-                </div>
-            </div>
-        </div>
-
-        <button @click="createLanding">Создать лендинг</button>
+      </div>
     </div>
-</template>
+  </template>
+  
+  <script setup lang="ts">
+  import { ref, computed, defineAsyncComponent } from 'vue';
+  import axios from 'axios';
+  import ComponentOne1 from './ComponentOne111.vue'
 
-<script lang="ts">
-import { ref, computed } from 'vue';
-
-export default {
-  name: 'LandingBuilder',
-  setup() {
-    // Данные шаблонов
-    const templates = ref([
-      {
-        id: '1',
-        name: 'Шаблон 1',
-        blocks: [
-          { type: 'header', content: 'Заголовок 1' },
-          { type: 'main', content: 'Основной контент 1' },
-          { type: 'footer', content: 'Подвал 1' },
-        ],
-      },
-      {
-        id: '2',
-        name: 'Шаблон 2',
-        blocks: [
-          { type: 'header', content: 'Заголовок 2' },
-          { type: 'main', content: 'Основной контент 2' },
-          { type: 'image', content: 'https://via.placeholder.com/150' },
-          { type: 'footer', content: 'Подвал 2' },
-        ],
-      },
-    ]);
-
-    const selectedTemplateId = ref<string | null>(null);
-    const selectedBlocks = ref<any[]>([]);
-
-    // Выбор шаблона
-    const selectedTemplate = computed(() => {
-      return templates.value.find(template => template.id === selectedTemplateId.value);
-    });
-
-    // Функция для создания лендинга
-    const createLanding = () => {
-      console.log('Создан лендинг с блоками:', selectedBlocks.value);
-    };
-
-    return {
-      templates,
-      selectedTemplateId,
-      selectedBlocks,
-      selectedTemplate,
-      createLanding,
-    };
-  },
-};
-</script>
+  // Загружаем шаблон по ID из URL (например: /builder/1)
+  const route = useRoute();
+  const templateId = route.params.id;
+  
+  // Состояния
+  const selectedTemplate = ref<any | null>(null);
+  
+  // Карта динамических компонентов (шапки и футеры)
+  const componentMap = {
+    Header1: defineAsyncComponent(() => import('@/components/ComponentOne.vue'))
+  };
+  
+  // Загрузка шаблона с сервера
+  const loadTemplate = async () => {
+    const response = await axios.get('http://localhost:3000/templates'); // или твой путь
+    selectedTemplate.value = response.data.find((t: any) => t.id === templateId);
+  };
+  
+  loadTemplate();
+  </script>
+  
 
 <style scoped>
 .landing-builder {
