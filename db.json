@@ -65,6 +65,28 @@
           "content": "Подвал сайта 3"
         }
       ]
+    },
+    {
+      "id": "4",
+      "name": "Шаблон 4",
+      "description": "Описание шаблона 4",
+      "author": "Автор 4",
+      "license": "GPL",
+      "price": "1500",
+      "blocks": [
+        {
+          "type": "header",
+          "content": "Шапка для шаблона 4"
+        },
+        {
+          "type": "image",
+          "content": "https://via.placeholder.com/300"
+        },
+        {
+          "type": "footer",
+          "content": "Подвал для шаблона 4"
+        }
+      ]
     }
   ],
   "landings": [

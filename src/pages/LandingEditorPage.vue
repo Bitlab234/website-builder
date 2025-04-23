@@ -1,75 +1,145 @@
 <template>
-  <div>
-    <h1>Конструктор лендинга</h1>
-    <div v-for="(block, index) in editableBlocks" :key="index">
-      <label>{{ block.name }}</label>
-      <input v-if="block.type === 'text'" v-model="block.value" />
-      <input
-        v-if="block.type === 'image'"
-        type="file"
-        @change="(event) => handleImageChange(index, event)"
-      />
+  <div class="landing-builder">
+    <h1>Создание лендинга</h1>
+
+    <div v-if="template" class="block-selection">
+      <h2>Шаблон: {{ template.name }}</h2>
+      <p>{{ template.description }}</p>
+
+      <h3>Выберите блоки</h3>
+      <div class="block" v-for="(block, index) in template.blocks" :key="index">
+        <input
+          type="checkbox"
+          :id="'block-' + index"
+          v-model="selectedBlocks"
+          :value="block"
+        />
+        <label :for="'block-' + index">{{ block.type }}: {{ block.content }}</label>
+      </div>
     </div>
-    <button @click="saveLanding">Сохранить</button>
+
+    <div v-if="selectedBlocks.length > 0" class="landing-preview">
+      <h2>Предпросмотр лендинга</h2>
+      <div v-for="(block, index) in selectedBlocks" :key="'preview-' + index">
+        <div v-if="block.type === 'header'">
+          <h3>{{ block.content }}</h3>
+        </div>
+        <div v-else-if="block.type === 'main'">
+          <p>{{ block.content }}</p>
+        </div>
+        <div v-else-if="block.type === 'footer'">
+          <footer>{{ block.content }}</footer>
+        </div>
+        <div v-else-if="block.type === 'image'">
+          <img :src="block.content" alt="Image Block" />
+        </div>
+      </div>
+    </div>
+
+    <button @click="createLanding" :disabled="!selectedBlocks.length">Создать лендинг</button>
   </div>
 </template>
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
 import { useRoute } from 'vue-router';
+import axios from 'axios';
 
-interface EditableBlock {
+interface Block {
+  type: string;
+  content: string;
+}
+
+interface Template {
+  id: string;
   name: string;
-  type: 'text' | 'image';
-  value: string;
+  description: string;
+  blocks: Block[];
 }
 
 export default {
-  name: 'LandingEditorPage',
+  name: 'LandingBuilder',
   setup() {
     const route = useRoute();
-    const editableBlocks = ref<EditableBlock[]>([]);
-    const templateId = route.params.templateId;
+    const templateId = route.params.templateId as string;
 
-    const fetchTemplateBlocks = async () => {
-      // Заглушка — можно заменить на запрос с сервера
-      editableBlocks.value = [
-        { name: 'Заголовок', type: 'text', value: '' },
-        { name: 'Изображение', type: 'image', value: '' },
-      ];
-    };
+    const template = ref<Template | null>(null);
+    const selectedBlocks = ref<Block[]>([]);
 
-    const handleImageChange = (index: number, event: Event) => {
-      const file = (event.target as HTMLInputElement).files?.[0];
-      if (file) {
-        editableBlocks.value[index].value = URL.createObjectURL(file);
+    const fetchTemplate = async () => {
+      try {
+        const res = await axios.get(`http://localhost:3000/templates/${templateId}`);
+        template.value = res.data;
+      } catch (err) {
+        console.error('Ошибка при загрузке шаблона:', err);
       }
     };
 
-    const saveLanding = async () => {
+    const createLanding = async () => {
       try {
         await axios.post('http://localhost:3000/landings', {
           templateId,
-          blocks: editableBlocks.value,
+          blocks: selectedBlocks.value,
         });
-        alert('Лендинг успешно сохранён!');
+        alert('Лендинг успешно создан!');
       } catch (err) {
-        alert('Ошибка при сохранении');
+        console.error('Ошибка при создании лендинга:', err);
+        alert('Не удалось сохранить лендинг');
       }
     };
 
-    onMounted(fetchTemplateBlocks);
+    onMounted(fetchTemplate);
 
     return {
-      editableBlocks,
-      saveLanding,
-      handleImageChange,
+      template,
+      selectedBlocks,
+      createLanding,
     };
   },
 };
 </script>
 
 <style scoped>
-/* Добавь стили, если нужно */
+.landing-builder {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.block-selection {
+  margin-bottom: 20px;
+}
+
+.block {
+  margin-bottom: 10px;
+}
+
+.landing-preview {
+  margin-top: 30px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.landing-preview img {
+  max-width: 100%;
+  margin-top: 10px;
+}
+
+button {
+  margin-top: 20px;
+  padding: 10px 24px;
+  font-size: 16px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #aaa;
+  cursor: not-allowed;
+}
 </style>
