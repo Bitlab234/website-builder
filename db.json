@@ -105,6 +105,34 @@
           "value": "http://example.com/image.jpg"
         }
       ]
+    },
+    {
+      "id": "e2db",
+      "templateId": "1",
+      "blocks": [
+        {
+          "type": "header",
+          "component": "Header1"
+        },
+        {
+          "type": "main",
+          "component": "Main1"
+        }
+      ]
+    },
+    {
+      "id": "d2bd",
+      "templateId": "1",
+      "blocks": [
+        {
+          "type": "header",
+          "component": "Header1"
+        },
+        {
+          "type": "main",
+          "component": "Main1"
+        }
+      ]
     }
   ]
 }

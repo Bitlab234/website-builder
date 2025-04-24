@@ -3,7 +3,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import TemplateListPage from '../pages/TemplateListPage.vue';
 import TemplateDetailPage from '../pages/TemplateDetailPage.vue';
 import LandingEditorPage from '../pages/LandingEditorPage.vue';
-import LandingPage from '../pages/LandingPage.vue';
 import mainTemp from '../components/mainTemp.vue'; 
 
 const routes = [

@@ -1,6 +1,7 @@
 <template>
-  <div>you nice man</div>
   <div class="landing-builder">
+    <TheHeader />
+
     <h1>Создание лендинга</h1>
 
     <div v-if="template" class="block-selection">
@@ -27,6 +28,8 @@
     </div>
 
     <button @click="createLanding" :disabled="!selectedBlocks.length">Создать лендинг</button>
+
+    <TheFooter />
   </div>
 </template>
 
@@ -35,11 +38,13 @@ import { ref, onMounted, defineAsyncComponent } from 'vue';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 import { componentMap } from '@/utils/componentMap';
+import TheHeader from '@/pages/templates/TheHeader.vue';
+import TheFooter from '@/pages/templates/TheFooter.vue';
 
 interface Block {
   type: string;
   content: string;
-  component?: string; // Добавим свойство для компонента
+  component?: string;
 }
 
 interface Template {
@@ -51,6 +56,10 @@ interface Template {
 
 export default {
   name: 'LandingBuilder',
+  components: {
+    TheHeader,
+    TheFooter,
+  },
   setup() {
     const route = useRoute();
     const templateId = route.params.templateId as string;
@@ -58,7 +67,6 @@ export default {
     const template = ref<Template | null>(null);
     const selectedBlocks = ref<Block[]>([]);
 
-    // Функция для получения шаблона из базы данных
     const fetchTemplate = async () => {
       try {
         const res = await axios.get(`http://localhost:3000/templates/${templateId}`);
@@ -68,7 +76,6 @@ export default {
       }
     };
 
-    // Функция для создания лендинга
     const createLanding = async () => {
       try {
         await axios.post('http://localhost:3000/landings', {
@@ -82,13 +89,13 @@ export default {
       }
     };
 
-    onMounted(fetchTemplate);  // Загружаем шаблон при монтировании компонента
+    onMounted(fetchTemplate);
 
     return {
       template,
       selectedBlocks,
       createLanding,
-      componentMap,  // Возвращаем компонент для динамической загрузки
+      componentMap,
     };
   },
 };
@@ -96,9 +103,7 @@ export default {
 
 <style scoped>
 .landing-builder {
-  padding: 20px;
   font-family: Arial, sans-serif;
-  max-width: 1000px;
   margin: 0 auto;
 }
 

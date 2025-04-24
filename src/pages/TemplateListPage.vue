@@ -1,4 +1,5 @@
 <template>
+  <TheHeader />
   <div>
     <h1>Каталог шаблонов</h1>
     <input v-model="searchQuery" placeholder="Поиск по шаблонам..." />
@@ -9,76 +10,60 @@
       <button @click="viewTemplate(template.id)">Подробнее</button>
     </div>
   </div>
+  <TheFooter />
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
+import TheHeader from '@/pages/templates/TheHeader.vue';
+import TheFooter from '@/pages/templates/TheFooter.vue';
+import type { TemplateData } from '../types';
 
-// Импортируем интерфейс TemplateData
-import { TemplateData } from '../types';
+const searchQuery = ref('');
+const templates = ref<TemplateData[]>([]);
+const loading = ref(true);
+const error = ref('');
+const router = useRouter();
 
-export default {
-  name: 'TemplateListPage',
-  setup() {
-    const searchQuery = ref('');
-    const templates = ref<TemplateData[]>([]); // Заменили на TemplateData
-    const loading = ref(true);
-    const error = ref('');
-    const router = useRouter();
-
-    const fetchTemplates = async () => {
-      try {
-        const response = await axios.get('http://localhost:3000/templates');
-        templates.value = response.data; // Теперь response.data будет соответствовать TemplateData[]
-      } catch (err) {
-        error.value = 'Не удалось загрузить шаблоны';
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    const filteredTemplates = computed(() => {
-      return templates.value.filter((template) =>
-        template.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-      );
-    });
-
-    const viewTemplate = (id: string) => { // id теперь строка, как в интерфейсе TemplateData
-      router.push(`/template/${id}`);
-    };
-
-    onMounted(fetchTemplates);
-
-    return {
-      searchQuery,
-      templates,
-      loading,
-      error,
-      filteredTemplates,
-      viewTemplate,
-    };
+const fetchTemplates = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/templates');
+    templates.value = response.data;
+  } catch {
+    error.value = 'Не удалось загрузить шаблоны';
+  } finally {
+    loading.value = false;
   }
 };
+
+const filteredTemplates = computed(() =>
+  templates.value.filter(t =>
+    t.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+);
+
+const viewTemplate = (id: string) => {
+  router.push(`/template/${id}`);
+};
+
+onMounted(fetchTemplates);
 </script>
 
 <style scoped>
-/* Общие стили для контейнера */
 div {
   padding: 20px;
   font-family: Arial, sans-serif;
   color: #333;
 }
 
-/* Стили для заголовка */
 h1 {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
 }
 
-/* Стили для поля поиска */
 input {
   width: 100%;
   padding: 10px;
@@ -88,32 +73,27 @@ input {
   border-radius: 4px;
 }
 
-/* Стили для текста загрузки */
 .loading {
   font-size: 18px;
   color: #007bff;
 }
 
-/* Стили для ошибки */
 .error {
   font-size: 16px;
   color: red;
   margin-top: 10px;
 }
 
-/* Стили для списка шаблонов */
 div > div {
   margin-bottom: 20px;
 }
 
-/* Стили для заголовка шаблона */
 h3 {
   font-size: 20px;
   font-weight: 600;
   margin: 0;
 }
 
-/* Стили для кнопки */
 button {
   padding: 10px 15px;
   font-size: 16px;
@@ -133,7 +113,6 @@ button:focus {
   outline: none;
 }
 
-/* Мобильная адаптация */
 @media (max-width: 768px) {
   div {
     padding: 10px;
