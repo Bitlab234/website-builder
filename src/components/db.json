@@ -17,12 +17,12 @@
           "component": "Main1_1"
         },
         {
-          "type": "main text input",
-          "component": "Main1_2"
+          "type":"main text input",
+          "component":"Main1_2"
         },
         {
-          "type": "main image input",
-          "component": "Main1_3"
+          "type":"main image input",
+          "component":"Main1_3"
         },
         {
           "type": "footer",
@@ -96,23 +96,15 @@
       "blocks": [
         {
           "type": "header",
-          "component": "Header4"
+          "content": "Шапка для шаблона 4"
         },
         {
-          "type": "main not input",
-          "component": "Main4_1"
-        },
-        {
-          "type": "main not input",
-          "component": "Main4_2"
-        },
-        {
-          "type": "main not input",
-          "component": "Main4_3"
+          "type": "image",
+          "content": "https://via.placeholder.com/300"
         },
         {
           "type": "footer",
-          "component": "Footer4"
+          "content": "Подвал для шаблона 4"
         }
       ]
     }
@@ -159,32 +151,6 @@
         {
           "type": "main",
           "component": "Main1"
-        }
-      ]
-    },
-    {
-      "id": "68da",
-      "templateId": "4",
-      "blocks": [
-        {
-          "type": "header",
-          "component": "Header4"
-        },
-        {
-          "type": "main not input",
-          "component": "Main4_1"
-        },
-        {
-          "type": "main not input",
-          "component": "Main4_2"
-        },
-        {
-          "type": "main not input",
-          "component": "Main4_3"
-        },
-        {
-          "type": "footer",
-          "component": "Footer4"
         }
       ]
     }
