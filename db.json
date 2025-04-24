@@ -119,50 +119,6 @@
   ],
   "landings": [
     {
-      "id": "da42",
-      "templateId": "1",
-      "blocks": [
-        {
-          "name": "Заголовок",
-          "type": "text",
-          "value": "Привет, мир!"
-        },
-        {
-          "name": "Изображение",
-          "type": "image",
-          "value": "http://example.com/image.jpg"
-        }
-      ]
-    },
-    {
-      "id": "e2db",
-      "templateId": "1",
-      "blocks": [
-        {
-          "type": "header",
-          "component": "Header1"
-        },
-        {
-          "type": "main",
-          "component": "Main1"
-        }
-      ]
-    },
-    {
-      "id": "d2bd",
-      "templateId": "1",
-      "blocks": [
-        {
-          "type": "header",
-          "component": "Header1"
-        },
-        {
-          "type": "main",
-          "component": "Main1"
-        }
-      ]
-    },
-    {
       "id": "68da",
       "templateId": "4",
       "blocks": [
@@ -185,6 +141,28 @@
         {
           "type": "footer",
           "component": "Footer4"
+        }
+      ]
+    },
+    {
+      "id": "a67b",
+      "templateId": "1",
+      "blocks": [
+        {
+          "type": "header",
+          "component": "Header1"
+        },
+        {
+          "type": "main text input",
+          "component": "Main1_2"
+        },
+        {
+          "type": "main image input",
+          "component": "Main1_3"
+        },
+        {
+          "type": "footer",
+          "component": "Footer1"
         }
       ]
     }

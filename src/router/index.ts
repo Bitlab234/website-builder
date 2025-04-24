@@ -3,7 +3,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import TemplateListPage from '../pages/TemplateListPage.vue';
 import TemplateDetailPage from '../pages/TemplateDetailPage.vue';
 import LandingEditorPage from '../pages/LandingEditorPage.vue';
+import LandingsList from '../pages/LandingsList.vue';
 import mainTemp from '../components/mainTemp.vue'; 
+import LandingView from '../pages/LandingView.vue';
 
 const routes = [
   {
@@ -25,6 +27,16 @@ const routes = [
     path: '/mainTemp',
     name: 'Test',
     component: mainTemp,
+  },
+  {
+    path: '/LandingsList',
+    name: 'LandingListPage',
+    component: LandingsList,
+  },
+  {
+    path: '/Landings/:id',
+    name: 'LandingPage',
+    component: LandingView,
   }
 ];
 
