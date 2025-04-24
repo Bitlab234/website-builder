@@ -7,6 +7,11 @@
     <div v-if="error" class="error">Ошибка: {{ error }}</div>
     <div v-for="template in filteredTemplates" :key="template.id">
       <h3>{{ template.name }}</h3>
+      <p v-if="template.Keywords" class="keywords">
+        <span v-for="(kw, index) in template.Keywords.split(',')" :key="index" class="keyword">
+          {{ kw.trim() }}
+        </span>
+      </p>
       <button @click="viewTemplate(template.id)">Подробнее</button>
     </div>
   </div>
@@ -84,7 +89,7 @@ input {
   margin-top: 10px;
 }
 
-div > div {
+div>div {
   margin-bottom: 20px;
 }
 
@@ -133,5 +138,21 @@ button:focus {
   button {
     font-size: 14px;
   }
+}
+
+.keywords {
+  margin: 10px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.keyword {
+  background-color: #e0f0ff;
+  color: #0056b3;
+  padding: 5px 10px;
+  border-radius: 16px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 </style>
