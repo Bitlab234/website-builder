@@ -2,9 +2,17 @@
   <TheHeader />
   <div>
     <h1>Каталог шаблонов</h1>
+
     <input v-model="searchQuery" placeholder="Поиск по шаблонам..." />
+
+    <select v-model="selectedKeyword" class="keyword-select">
+      <option value="">Все ключевые слова</option>
+      <option v-for="kw in allKeywords" :key="kw" :value="kw">{{ kw }}</option>
+    </select>
+
     <div v-if="loading">Загрузка...</div>
     <div v-if="error" class="error">Ошибка: {{ error }}</div>
+
     <div v-for="template in filteredTemplates" :key="template.id">
       <h3>{{ template.name }}</h3>
       <p v-if="template.Keywords" class="keywords">
@@ -27,6 +35,7 @@ import TheFooter from '@/pages/templates/TheFooter.vue';
 import type { TemplateData } from '../types';
 
 const searchQuery = ref('');
+const selectedKeyword = ref('');
 const templates = ref<TemplateData[]>([]);
 const loading = ref(true);
 const error = ref('');
@@ -43,10 +52,23 @@ const fetchTemplates = async () => {
   }
 };
 
+const allKeywords = computed(() => {
+  const keywordsSet = new Set<string>();
+  templates.value.forEach(t => {
+    if (t.Keywords) {
+      t.Keywords.split(',').forEach(k => keywordsSet.add(k.trim()));
+    }
+  });
+  return Array.from(keywordsSet).sort();
+});
+
 const filteredTemplates = computed(() =>
-  templates.value.filter(t =>
-    t.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
+  templates.value.filter(t => {
+    const matchesSearch = t.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    const matchesKeyword =
+      !selectedKeyword.value || (t.Keywords && t.Keywords.split(',').map(k => k.trim()).includes(selectedKeyword.value));
+    return matchesSearch && matchesKeyword;
+  })
 );
 
 const viewTemplate = (id: string) => {
@@ -69,7 +91,8 @@ h1 {
   margin-bottom: 20px;
 }
 
-input {
+input,
+.keyword-select {
   width: 100%;
   padding: 10px;
   font-size: 16px;
@@ -89,7 +112,7 @@ input {
   margin-top: 10px;
 }
 
-div>div {
+div > div {
   margin-bottom: 20px;
 }
 
@@ -118,28 +141,6 @@ button:focus {
   outline: none;
 }
 
-@media (max-width: 768px) {
-  div {
-    padding: 10px;
-  }
-
-  h1 {
-    font-size: 20px;
-  }
-
-  input {
-    font-size: 14px;
-  }
-
-  h3 {
-    font-size: 18px;
-  }
-
-  button {
-    font-size: 14px;
-  }
-}
-
 .keywords {
   margin: 10px 0;
   display: flex;
@@ -154,5 +155,28 @@ button:focus {
   border-radius: 16px;
   font-size: 14px;
   white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  div {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  input,
+  .keyword-select {
+    font-size: 14px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  button {
+    font-size: 14px;
+  }
 }
 </style>
