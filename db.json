@@ -13,12 +13,20 @@
           "component": "Header1"
         },
         {
-          "type": "main",
-          "component": "Main1"
+          "type": "main not input",
+          "component": "Main1_1"
+        },
+        {
+          "type":"main text input",
+          "component":"Main1_2"
+        },
+        {
+          "type":"main image input",
+          "component":"Main1_3"
         },
         {
           "type": "footer",
-          "content": "Подвал сайта"
+          "component": "Footer1"
         }
       ]
     },
@@ -35,12 +43,20 @@
           "component": "Header2"
         },
         {
-          "type": "image",
-          "content": "url/to/image.jpg"
+          "type": "main not input",
+          "component": "Main2_1"
+        },
+        {
+          "type": "main text input",
+          "component": "Main2_2"
+        },
+        {
+          "type": "main not input",
+          "component": "Main2_3"
         },
         {
           "type": "footer",
-          "content": "Подвал для шаблона 2"
+          "component": "Footer2"
         }
       ]
     },

@@ -12,11 +12,11 @@
 
 <script setup lang="ts">
 import { ref, defineAsyncComponent, shallowRef } from 'vue';
-import ComponentOne1 from './ComponentOne.vue'
+import ComponentOne1 from './header1.vue'
 
 // Создаём объект с компонентами, которые будут загружаться динамически
 const components = {
-    ComponentOne: defineAsyncComponent(() => import('../components/ComponentOne.vue')),
+    ComponentOne: defineAsyncComponent(() => import('./header1.vue')),
     ComponentTwo: defineAsyncComponent(() => import('../components/ComponentTwo.vue')),
     ComponentThree: defineAsyncComponent(() => import('../components/ComponentThree.vue')),
 };

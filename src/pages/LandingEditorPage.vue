@@ -16,7 +16,7 @@
           v-model="selectedBlocks"
           :value="block"
         />
-        <label :for="'block-' + index">{{ block.type }}: {{ block.content }}</label>
+        <label :for="'block-' + index">{{ block.type }}</label>
       </div>
     </div>
 
