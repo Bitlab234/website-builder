@@ -2,17 +2,15 @@
   <TheHeader />
   <div>
     <h1>Каталог шаблонов</h1>
-
-    <input v-model="searchQuery" placeholder="Поиск по шаблонам..." />
-
-    <select v-model="selectedKeyword" class="keyword-select">
-      <option value="">Все ключевые слова</option>
-      <option v-for="kw in allKeywords" :key="kw" :value="kw">{{ kw }}</option>
-    </select>
-
+    <div class="search-bar">
+      <input v-model="searchQuery" placeholder="Поиск по шаблонам..." class="main-search" />
+      <select v-model="selectedKeyword" class="keyword-select small-select">
+        <option value="">Все ключевые слова</option>
+        <option v-for="kw in allKeywords" :key="kw" :value="kw">{{ kw }}</option>
+      </select>
+    </div>
     <div v-if="loading">Загрузка...</div>
     <div v-if="error" class="error">Ошибка: {{ error }}</div>
-
     <div v-for="template in filteredTemplates" :key="template.id">
       <h3>{{ template.name }}</h3>
       <p v-if="template.Keywords" class="keywords">
@@ -53,21 +51,18 @@ const fetchTemplates = async () => {
 };
 
 const allKeywords = computed(() => {
-  const keywordsSet = new Set<string>();
+  const keywords = new Set<string>();
   templates.value.forEach(t => {
-    if (t.Keywords) {
-      t.Keywords.split(',').forEach(k => keywordsSet.add(k.trim()));
-    }
+    t.Keywords?.split(',').forEach(k => keywords.add(k.trim()));
   });
-  return Array.from(keywordsSet).sort();
+  return Array.from(keywords);
 });
 
 const filteredTemplates = computed(() =>
   templates.value.filter(t => {
-    const matchesSearch = t.name.toLowerCase().includes(searchQuery.value.toLowerCase());
-    const matchesKeyword =
-      !selectedKeyword.value || (t.Keywords && t.Keywords.split(',').map(k => k.trim()).includes(selectedKeyword.value));
-    return matchesSearch && matchesKeyword;
+    const nameMatch = t.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    const keywordMatch = !selectedKeyword.value || (t.Keywords && t.Keywords.includes(selectedKeyword.value));
+    return nameMatch && keywordMatch;
   })
 );
 
@@ -91,14 +86,31 @@ h1 {
   margin-bottom: 20px;
 }
 
-input,
-.keyword-select {
-  width: 100%;
+.search-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  align-items: center;
+}
+
+.main-search {
+  flex: 2;
   padding: 10px;
   font-size: 16px;
-  margin-bottom: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
+}
+
+.keyword-select {
+  flex: 1;
+  padding: 6px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.small-select {
+  max-width: 200px;
 }
 
 .loading {
@@ -141,6 +153,32 @@ button:focus {
   outline: none;
 }
 
+@media (max-width: 768px) {
+  div {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .main-search {
+    font-size: 14px;
+  }
+
+  .keyword-select {
+    font-size: 12px;
+  }
+
+  h3 {
+    font-size: 18px;
+  }
+
+  button {
+    font-size: 14px;
+  }
+}
+
 .keywords {
   margin: 10px 0;
   display: flex;
@@ -153,30 +191,7 @@ button:focus {
   color: #0056b3;
   padding: 5px 10px;
   border-radius: 16px;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
-}
-
-@media (max-width: 768px) {
-  div {
-    padding: 10px;
-  }
-
-  h1 {
-    font-size: 20px;
-  }
-
-  input,
-  .keyword-select {
-    font-size: 14px;
-  }
-
-  h3 {
-    font-size: 18px;
-  }
-
-  button {
-    font-size: 14px;
-  }
 }
 </style>
