@@ -24,11 +24,6 @@ const routes = [
     component: LandingEditorPage,
   },
   {
-    path: '/mainTemp',
-    name: 'Test',
-    component: mainTemp,
-  },
-  {
     path: '/LandingsList',
     name: 'LandingListPage',
     component: LandingsList,
