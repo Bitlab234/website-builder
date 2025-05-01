@@ -1,103 +1,179 @@
 <template>
-  <div class="landing-builder">
+  <div class="landing-editor">
     <TheHeader />
 
-    <h1>Создание лендинга</h1>
-
-    <div v-if="template" class="block-selection">
-      <h2>Шаблон: {{ template.name }}</h2>
-      <p>{{ template.description }}</p>
-
-      <h3>Выберите блоки</h3>
-      <div class="block" v-for="(block, index) in template.blocks" :key="index">
-        <input
-          type="checkbox"
-          :id="'block-' + index"
-          v-model="selectedBlocks"
-          :value="block"
-        />
-        <label :for="'block-' + index">{{ block.type }}</label>
+    <div v-if="loading">Загрузка данных...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    
+    <template v-else>
+      <h1>Редактор лендинга</h1>
+      
+      <div v-if="template">
+        <h2>Шаблон: {{ template.name }}</h2>
+        <p>{{ template.description }}</p>
       </div>
-    </div>
 
-    <div v-if="selectedBlocks.length > 0" class="landing-preview">
-      <h2>Предпросмотр лендинга</h2>
-      <div v-for="(block, index) in selectedBlocks" :key="'preview-' + index">
-        <component :is="componentMap[block.component]" :block="block" />
+      <div class="blocks-selection">
+        <h3>Выбор и порядок блоков</h3>
+        
+        <div v-if="blocks.length === 0" class="no-blocks">
+          Нет доступных блоков
+        </div>
+        
+        <div v-else class="blocks-list">
+          <div 
+            v-for="(block, index) in blocks" 
+            :key="block.id" 
+            class="block-item"
+          >
+            <div class="block-header">
+              <input
+                type="checkbox"
+                :id="'block-' + block.id"
+                v-model="selectedBlockIds"
+                :value="block.id"
+              />
+              <label :for="'block-' + block.id">
+                {{ block.type }} ({{ block.component }})
+              </label>
+              <div class="block-actions" v-if="isBlockSelected(block.id)">
+                <button 
+                  class="order-btn order-btn-up"
+                  @click="moveBlockUp(index)"
+                  :disabled="index === 0"
+                >↑</button>
+                <button 
+                  class="order-btn order-btn-down"
+                  @click="moveBlockDown(index)"
+                  :disabled="index === blocks.length - 1"
+                >↓</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <button @click="createLanding" :disabled="!selectedBlocks.length">Создать лендинг</button>
+      <div class="landing-preview">
+        <h3>Предпросмотр лендинга</h3>
+        <div v-if="selectedBlocks.length === 0" class="no-selected-blocks">
+          Выберите блоки для отображения
+        </div>
+        <div v-else>
+          <div 
+            v-for="block in selectedBlocks" 
+            :key="'preview-' + block.id" 
+            class="preview-block"
+          >
+            <div v-if="componentMap[block.component]">
+              <component 
+                :is="componentMap[block.component]" 
+                :block="block"
+              />
+            </div>
+            <div v-else class="component-missing">
+              Компонент "{{ block.component }}" не найден
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
 
     <TheFooter />
   </div>
 </template>
 
 <script lang="ts">
-import { ref, onMounted, defineAsyncComponent } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import axios from 'axios';
-import { componentMap } from '@/utils/componentMap';
+import { fetchTemplateById, fetchTemplateBlocks } from '@/services/api';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
-
-interface Block {
-  type: string;
-  content: string;
-  component?: string;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  blocks: Block[];
-}
+import { componentMap } from '@/utils/componentMap';
+import type { Template, TemplateBlock } from '@/services/types';
 
 export default {
-  name: 'LandingBuilder',
+  name: 'LandingEditorPage',
   components: {
     TheHeader,
-    TheFooter,
+    TheFooter
   },
   setup() {
     const route = useRoute();
-    const templateId = route.params.templateId as string;
+    const templateId = Number(route.params.templateId);
 
+    // Данные
     const template = ref<Template | null>(null);
-    const selectedBlocks = ref<Block[]>([]);
+    const blocks = ref<TemplateBlock[]>([]);
+    const selectedBlockIds = ref<number[]>([]);
+    const loading = ref(true);
+    const error = ref('');
 
-    const fetchTemplate = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3000/templates/${templateId}`);
-        template.value = res.data;
-      } catch (err) {
-        console.error('Ошибка при загрузке шаблона:', err);
+    // Выбранные блоки для предпросмотра
+    const selectedBlocks = computed(() => {
+      return blocks.value.filter(block => selectedBlockIds.value.includes(block.id));
+    });
+
+    // Проверка выбран ли блок
+    const isBlockSelected = (id: number) => {
+      return selectedBlockIds.value.includes(id);
+    };
+
+    // Перемещение блока вверх
+    const moveBlockUp = (index: number) => {
+      if (index > 0) {
+        const newBlocks = [...blocks.value];
+        [newBlocks[index], newBlocks[index - 1]] = [newBlocks[index - 1], newBlocks[index]];
+        blocks.value = newBlocks;
       }
     };
 
-    const createLanding = async () => {
-      try {
-        await axios.post('http://localhost:3000/landings', {
-          templateId,
-          blocks: selectedBlocks.value,
-        });
-        alert('Лендинг успешно создан!');
-      } catch (err) {
-        console.error('Ошибка при создании лендинга:', err);
-        alert('Не удалось сохранить лендинг');
+    // Перемещение блока вниз
+    const moveBlockDown = (index: number) => {
+      if (index < blocks.value.length - 1) {
+        const newBlocks = [...blocks.value];
+        [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
+        blocks.value = newBlocks;
       }
     };
 
-    onMounted(fetchTemplate);
+    // Загрузка данных
+    const loadData = async () => {
+      try {
+        loading.value = true;
+        error.value = '';
+        
+        const [templateData, blocksData] = await Promise.all([
+          fetchTemplateById(templateId),
+          fetchTemplateBlocks(templateId)
+        ]);
+        
+        template.value = templateData;
+        blocks.value = blocksData;
+        selectedBlockIds.value = blocksData.map(block => block.id);
+        
+      } catch (err) {
+        error.value = 'Не удалось загрузить данные';
+        console.error('Ошибка загрузки:', err);
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    onMounted(loadData);
 
     return {
       template,
+      blocks,
+      selectedBlockIds,
       selectedBlocks,
-      createLanding,
+      loading,
+      error,
       componentMap,
+      isBlockSelected,
+      moveBlockUp,
+      moveBlockDown
     };
-  },
+  }
 };
 </script>
 
@@ -141,5 +217,40 @@ button {
 button:disabled {
   background-color: #aaa;
   cursor: not-allowed;
+}
+
+.block-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.block-actions {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.order-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 24px;
+  text-align: center;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #007bff;
+  cursor: pointer;
+}
+
+input[type="checkbox"] {
+  margin: 0;
+  vertical-align: middle;
+}
+
+label {
+  margin: 0;
+  vertical-align: middle;
 }
 </style>

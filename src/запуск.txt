@@ -1,3 +1,13 @@
 json-server --watch db.json --port 3000
 
+запуск фронта
+npm run dev
+
+запуск бд из папки backend
+docker-compose up -d
+
+очистить бд
+docker-compose down -v
+
+запуск из папка бэка
 npm run dev

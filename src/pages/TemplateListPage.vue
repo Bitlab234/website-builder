@@ -13,8 +13,8 @@
     <div v-if="error" class="error">Ошибка: {{ error }}</div>
     <div v-for="template in filteredTemplates" :key="template.id">
       <h3>{{ template.name }}</h3>
-      <p v-if="template.Keywords" class="keywords">
-        <span v-for="(kw, index) in template.Keywords.split(',')" :key="index" class="keyword">
+      <p v-if="template.keywords" class="keywords">
+        <span v-for="(kw, index) in template.keywords.split(',')" :key="index" class="keyword">
           {{ kw.trim() }}
         </span>
       </p>
@@ -27,24 +27,24 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import axios from 'axios';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
-import type { TemplateData } from '../types';
+import { fetchAllTemplates } from '@/services/api'; // Импортируем наш сервис
+import type { Template } from '../types'; // Убедитесь, что тип Template соответствует тому, что возвращает бэкенд
 
 const searchQuery = ref('');
 const selectedKeyword = ref('');
-const templates = ref<TemplateData[]>([]);
+const templates = ref<Template[]>([]);
 const loading = ref(true);
 const error = ref('');
 const router = useRouter();
 
 const fetchTemplates = async () => {
   try {
-    const response = await axios.get('http://localhost:3000/templates');
-    templates.value = response.data;
-  } catch {
+    templates.value = await fetchAllTemplates();
+  } catch (err) {
     error.value = 'Не удалось загрузить шаблоны';
+    console.error('Ошибка:', err);
   } finally {
     loading.value = false;
   }
@@ -53,18 +53,27 @@ const fetchTemplates = async () => {
 const allKeywords = computed(() => {
   const keywords = new Set<string>();
   templates.value.forEach(t => {
-    t.Keywords?.split(',').forEach(k => keywords.add(k.trim()));
+    if (t.keywords) {
+      t.keywords.split(',').forEach(k => {
+        const trimmed = k.trim();
+        if (trimmed) keywords.add(trimmed);
+      });
+    }
   });
-  return Array.from(keywords);
+  return Array.from(keywords).sort();
 });
 
-const filteredTemplates = computed(() =>
-  templates.value.filter(t => {
-    const nameMatch = t.name.toLowerCase().includes(searchQuery.value.toLowerCase());
-    const keywordMatch = !selectedKeyword.value || (t.Keywords && t.Keywords.includes(selectedKeyword.value));
+const filteredTemplates = computed(() => {
+  const query = searchQuery.value.toLowerCase();
+  const keyword = selectedKeyword.value;
+  
+  return templates.value.filter(t => {
+    const nameMatch = t.name.toLowerCase().includes(query);
+    const keywordMatch = !keyword || 
+      (t.keywords && t.keywords.split(',').some(k => k.trim() === keyword));
     return nameMatch && keywordMatch;
-  })
-);
+  });
+});
 
 const viewTemplate = (id: string) => {
   router.push(`/template/${id}`);
