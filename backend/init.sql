@@ -70,3 +70,17 @@ INSERT INTO landing_blocks (landing_id, type, component, position) VALUES
 ('a67b', 'main text input', 'Main1_2', 2),
 ('a67b', 'main image input', 'Main1_3', 3),
 ('a67b', 'footer', 'Footer1', 4);
+
+CREATE TABLE IF NOT EXISTS admins (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+INSERT INTO admins (username, password_hash) VALUES 
+('admin1@example.admin', crypt('admin1', gen_salt('bf'))),
+('admin2@example.admin', crypt('admin2', gen_salt('bf')))
+ON CONFLICT (username) DO NOTHING;

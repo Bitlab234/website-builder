@@ -3,6 +3,39 @@ import type { Template, TemplateBlock } from './types'
 
 const API_BASE = 'http://localhost:3001';
 
+const createApiInstance = () => {
+    const instance = axios.create({
+        baseURL: API_BASE,
+        withCredentials: true,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    instance.interceptors.response.use(
+        response => response,
+        async error => {
+            const originalRequest = error.config;
+
+            if (error.response?.status === 401 && !originalRequest._retry) {
+                originalRequest._retry = true;
+
+                try {
+                    await instance.post('/api/admin/refresh');
+                    return instance(originalRequest);
+                } catch (err) {
+                    window.location.href = '/admin/login';
+                    return Promise.reject(err);
+                }
+            }
+
+            return Promise.reject(error);
+        }
+    );
+
+    return instance;
+};
+
 export async function fetchAllTemplates(): Promise<Template[]> {
     try {
         console.log('huinya srabotala');
@@ -86,8 +119,30 @@ export const fetchAllLandings = async () => {
     const response = await fetch(`${API_BASE}/api/landings`);
     return response.json();
 };
-  
+
 export const fetchLandingById = async (id: string) => {
     const response = await fetch(`${API_BASE}/api/landings/${id}`);
     return response.json();
+};
+
+export const adminCheckAuth = async () => {
+    try {
+        const api = createApiInstance();
+        await api.get('/api/admin/data');
+        return true;
+    } catch (error) {
+        console.error('Ошибка проверки авторизации:', error);
+        return false;
+    }
+};
+
+export const adminLogout = async () => {
+    try {
+        const api = createApiInstance();
+        await api.post('/api/admin/logout');
+        return true;
+    } catch (error) {
+        console.error('Ошибка при выходе:', error);
+        return false;
+    }
 };

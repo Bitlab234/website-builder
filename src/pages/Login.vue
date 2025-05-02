@@ -5,13 +5,13 @@
 
             <form @submit.prevent="handleLogin" class="login-form">
                 <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" v-model="email" required placeholder="admin@example.com">
+                    <label for="username">Логин</label>
+                    <input type="text" id="username" v-model="username" required placeholder="admin1">
                 </div>
 
                 <div class="form-group">
                     <label for="password">Пароль</label>
-                    <input type="password" id="password" v-model="password" required placeholder="••••••••">
+                    <input type="password" id="password" v-model="password" required placeholder="admin123">
                 </div>
 
                 <button type="submit" class="login-btn">Войти</button>
@@ -25,26 +25,36 @@
 <script lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import axios from 'axios';
 
 export default {
     name: 'AdminLogin',
     setup() {
-        const email = ref('');
+        const username = ref('');
         const password = ref('');
         const error = ref('');
         const router = useRouter();
 
-        const handleLogin = () => {
-            if (email.value === 'admin@example.com' && password.value === 'admin123') {
-                localStorage.setItem('isAuthenticated', 'true');
-                router.push('/admin');
-            } else {
-                error.value = 'Неверный email или пароль';
+        const handleLogin = async () => {
+            try {
+                error.value = '';
+                const response = await axios.post(
+                    'http://localhost:3001/api/admin/login',
+                    { username: username.value, password: password.value },
+                    { withCredentials: true }
+                );
+
+                if (response.data.success) {
+                    router.push('/admin');
+                }
+            } catch (err) {
+                error.value = 'Неверный логин или пароль';
+                console.error(err);
             }
         };
 
         return {
-            email,
+            username,
             password,
             error,
             handleLogin
