@@ -24,7 +24,7 @@
                                 <td>{{ landing.id }}</td>
                                 <td>{{ landing.template_id }}</td>
                                 <td>
-                                    <button class="action-btn view-btn">Просмотр</button>
+                                    <button @click="showLandingBlocks(landing.id)" class="action-btn view-btn">Блоки</button>
                                     <button class="action-btn delete-btn">Удалить</button>
                                 </td>
                             </tr>
@@ -35,6 +35,37 @@
                     </table>
                 </div>
                 <div v-else class="loading">Загрузка лендингов...</div>
+
+                <!-- Таблица блоков лендинга -->
+                <div v-if="showLandingBlocksTable" class="blocks-section">
+                    <h3>Блоки лендинга #{{ currentLandingId }}</h3>
+                    <div class="table-container" v-if="!loading.landingBlocks">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Landing ID</th>
+                                    <th>Тип</th>
+                                    <th>Компонент</th>
+                                    <th>Позиция</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="landingBlocks.length" v-for="block in landingBlocks" :key="block.id">
+                                    <td>{{ block.id }}</td>
+                                    <td>{{ block.landing_id }}</td>
+                                    <td>{{ block.type }}</td>
+                                    <td>{{ block.component }}</td>
+                                    <td>{{ block.position }}</td>
+                                </tr>
+                                <tr v-else>
+                                    <td colspan="5" class="no-data">Нет данных о блоках</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else class="loading">Загрузка блоков лендинга...</div>
+                </div>
 
                 <h2>Управление шаблонами</h2>
 
@@ -54,7 +85,7 @@
                                 <td>{{ template.name }}</td>
                                 <td>{{ template.description }}</td>
                                 <td>
-                                    <button class="action-btn view-btn">Просмотр</button>
+                                    <button @click="showTemplateBlocks(template.id)" class="action-btn view-btn">Блоки</button>
                                     <button class="action-btn edit-btn">Редактировать</button>
                                     <button class="action-btn delete-btn">Удалить</button>
                                 </td>
@@ -66,6 +97,37 @@
                     </table>
                 </div>
                 <div v-else class="loading">Загрузка шаблонов...</div>
+
+                <!-- Таблица блоков шаблона -->
+                <div v-if="showTemplateBlocksTable" class="blocks-section">
+                    <h3>Блоки шаблона #{{ currentTemplateId }}</h3>
+                    <div class="table-container" v-if="!loading.templateBlocks">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Template ID</th>
+                                    <th>Тип</th>
+                                    <th>Компонент</th>
+                                    <th>Позиция</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="templateBlocks.length" v-for="block in templateBlocks" :key="block.id">
+                                    <td>{{ block.id }}</td>
+                                    <td>{{ block.template_id }}</td>
+                                    <td>{{ block.type }}</td>
+                                    <td>{{ block.component }}</td>
+                                    <td>{{ block.position }}</td>
+                                </tr>
+                                <tr v-else>
+                                    <td colspan="5" class="no-data">Нет данных о блоках</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div v-else class="loading">Загрузка блоков шаблона...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -74,7 +136,7 @@
 <script lang="ts">
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { adminCheckAuth, adminLogout, fetchAllLandings, fetchAllTemplates } from '@/services/api';
+import { adminCheckAuth, adminLogout, fetchAllLandings, fetchAllTemplates, fetchLandingBlocks, fetchTemplateBlocks } from '@/services/api';
 
 export default {
     name: 'AdminPanel',
@@ -82,11 +144,19 @@ export default {
         const router = useRouter();
         const landings = ref<any[]>([]);
         const templates = ref<any[]>([]);
+        const landingBlocks = ref<any[]>([]);
+        const templateBlocks = ref<any[]>([]);
         const loading = ref({
             landings: true,
-            templates: true
+            templates: true,
+            landingBlocks: false,
+            templateBlocks: false
         });
         const error = ref('');
+        const showLandingBlocksTable = ref(false);
+        const showTemplateBlocksTable = ref(false);
+        const currentLandingId = ref<number | null>(null);
+        const currentTemplateId = ref<number | null>(null);
 
         const checkAuth = async () => {
             try {
@@ -104,7 +174,12 @@ export default {
 
         const loadData = async () => {
             try {
-                loading.value = { landings: true, templates: true };
+                loading.value = { 
+                    landings: true, 
+                    templates: true,
+                    landingBlocks: false,
+                    templateBlocks: false
+                };
 
                 const [landingsData, templatesData] = await Promise.all([
                     fetchAllLandings(),
@@ -118,15 +193,44 @@ export default {
                 error.value = 'Ошибка загрузки данных';
                 console.error(err);
             } finally {
-                loading.value = { landings: false, templates: false };
+                loading.value = { 
+                    landings: false, 
+                    templates: false,
+                    landingBlocks: false,
+                    templateBlocks: false
+                };
             }
         };
 
-        const formatDate = (dateString: string) => {
+        const showLandingBlocks = async (landingId: number) => {
             try {
-                return new Date(dateString).toLocaleDateString();
-            } catch {
-                return dateString;
+                loading.value.landingBlocks = true;
+                currentLandingId.value = landingId;
+                const blocks = await fetchLandingBlocks(landingId);
+                landingBlocks.value = blocks || [];
+                showLandingBlocksTable.value = true;
+                showTemplateBlocksTable.value = false;
+            } catch (err) {
+                error.value = 'Ошибка загрузки блоков лендинга';
+                console.error(err);
+            } finally {
+                loading.value.landingBlocks = false;
+            }
+        };
+
+        const showTemplateBlocks = async (templateId: number) => {
+            try {
+                loading.value.templateBlocks = true;
+                currentTemplateId.value = templateId;
+                const blocks = await fetchTemplateBlocks(templateId);
+                templateBlocks.value = blocks || [];
+                showTemplateBlocksTable.value = true;
+                showLandingBlocksTable.value = false;
+            } catch (err) {
+                error.value = 'Ошибка загрузки блоков шаблона';
+                console.error(err);
+            } finally {
+                loading.value.templateBlocks = false;
             }
         };
 
@@ -140,10 +244,17 @@ export default {
         return {
             landings,
             templates,
+            landingBlocks,
+            templateBlocks,
             loading,
             error,
+            showLandingBlocksTable,
+            showTemplateBlocksTable,
+            currentLandingId,
+            currentTemplateId,
             handleLogout,
-            formatDate
+            showLandingBlocks,
+            showTemplateBlocks
         };
     }
 };

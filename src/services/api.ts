@@ -146,3 +146,13 @@ export const adminLogout = async () => {
         return false;
     }
 };
+
+export const fetchLandingBlocks = async (landingId: string) => {
+    try {
+        const response = await axios.get(`${API_BASE}/api/landings/${landingId}/blocks`);
+        return response.data;
+    } catch (error) {
+        console.error('Ошибка при загрузке блоков лендинга:', error);
+        throw error;
+    }
+};

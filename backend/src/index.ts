@@ -34,17 +34,17 @@ const generateTokens = (adminId) => {
         session: generateRandomString(), // Используем нашу функцию
         iat: Math.floor(Date.now() / 1000)
     };
-    
+
     console.log(`Generating new tokens for admin ${adminId} with session ${payload.session}`);
-    
-    const accessToken = jwt.sign(payload, SECRET_KEY, { 
-        expiresIn: ACCESS_TOKEN_EXPIRES 
+
+    const accessToken = jwt.sign(payload, SECRET_KEY, {
+        expiresIn: ACCESS_TOKEN_EXPIRES
     });
-    
-    const refreshToken = jwt.sign(payload, SECRET_KEY, { 
-        expiresIn: REFRESH_TOKEN_EXPIRES 
+
+    const refreshToken = jwt.sign(payload, SECRET_KEY, {
+        expiresIn: REFRESH_TOKEN_EXPIRES
     });
-    
+
     return { accessToken, refreshToken };
 };
 
@@ -279,6 +279,34 @@ app.get('/api/landings/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.get('/api/landings/:id/blocks', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rows } = await pool.query(
+            'SELECT * FROM landing_blocks WHERE landing_id = $1 ORDER BY position',
+            [id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка при получении блоков лендинга' });
+    }
+});
+
+app.get('/api/templates/:id/blocks', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { rows } = await pool.query(
+            'SELECT * FROM template_blocks WHERE template_id = $1 ORDER BY position',
+            [id]
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка при получении блоков шаблона' });
     }
 });
 
