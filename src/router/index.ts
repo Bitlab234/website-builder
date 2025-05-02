@@ -5,6 +5,8 @@ import TemplateDetailPage from '../pages/TemplateDetailPage.vue';
 import LandingEditorPage from '../pages/LandingEditorPage.vue';
 import LandingsList from '../pages/LandingsList.vue';
 import LandingView from '../pages/LandingView.vue';
+import Login from '../pages/Login.vue';
+import AdminPanel from '../pages/AdminPanel.vue';
 
 const routes = [
   {
@@ -31,6 +33,16 @@ const routes = [
     path: '/Landings/:id',
     name: 'LandingPage',
     component: LandingView,
+  },
+  {
+    path: '/admin/login',
+    neme: 'adminLogin',
+    component: Login,
+  },
+  {
+    path: '/admin',
+    name: 'admin',
+    component: AdminPanel,
   }
 ];
 

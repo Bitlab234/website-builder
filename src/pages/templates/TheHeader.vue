@@ -3,7 +3,7 @@
         <h1>Website Builder</h1>
         <nav>
             <router-link to="/">Главная</router-link>
-            <router-link to="/">О нас</router-link>
+            <router-link to="/admin/login">Администратор</router-link>
             <router-link to="/LandingsList">Мои лендинги</router-link>
         </nav>
     </header>
