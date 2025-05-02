@@ -29,8 +29,8 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
-import { fetchAllTemplates } from '@/services/api'; // Импортируем наш сервис
-import type { Template } from '../types'; // Убедитесь, что тип Template соответствует тому, что возвращает бэкенд
+import { fetchAllTemplates } from '@/services/api';
+import type { Template } from '../types';
 
 const searchQuery = ref('');
 const selectedKeyword = ref('');

@@ -18,11 +18,10 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { fetchTemplateById } from '@/services/api'; // Импортируем функцию из API-сервиса
+import { fetchTemplateById } from '@/services/api';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
 
-// Интерфейс можно перенести в файл types.ts и импортировать оттуда
 interface Template {
   id: number;
   name: string;

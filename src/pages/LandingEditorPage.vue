@@ -4,10 +4,10 @@
 
     <div v-if="loading">Загрузка данных...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    
+
     <template v-else>
       <h1>Редактор лендинга</h1>
-      
+
       <div v-if="template">
         <h2>Шаблон: {{ template.name }}</h2>
         <p>{{ template.description }}</p>
@@ -15,38 +15,22 @@
 
       <div class="blocks-selection">
         <h3>Выбор и порядок блоков</h3>
-        
+
         <div v-if="blocks.length === 0" class="no-blocks">
           Нет доступных блоков
         </div>
-        
+
         <div v-else class="blocks-list">
-          <div 
-            v-for="(block, index) in blocks" 
-            :key="block.id" 
-            class="block-item"
-          >
+          <div v-for="(block, index) in blocks" :key="block.id" class="block-item">
             <div class="block-header">
-              <input
-                type="checkbox"
-                :id="'block-' + block.id"
-                v-model="selectedBlockIds"
-                :value="block.id"
-              />
+              <input type="checkbox" :id="'block-' + block.id" v-model="selectedBlockIds" :value="block.id" />
               <label :for="'block-' + block.id">
                 {{ block.type }} ({{ block.component }})
               </label>
               <div class="block-actions" v-if="isBlockSelected(block.id)">
-                <button 
-                  class="order-btn order-btn-up"
-                  @click="moveBlockUp(index)"
-                  :disabled="index === 0"
-                >↑</button>
-                <button 
-                  class="order-btn order-btn-down"
-                  @click="moveBlockDown(index)"
-                  :disabled="index === blocks.length - 1"
-                >↓</button>
+                <button class="order-btn order-btn-up" @click="moveBlockUp(index)" :disabled="index === 0">↑</button>
+                <button class="order-btn order-btn-down" @click="moveBlockDown(index)"
+                  :disabled="index === blocks.length - 1">↓</button>
               </div>
             </div>
           </div>
@@ -59,16 +43,9 @@
           Выберите блоки для отображения
         </div>
         <div v-else>
-          <div 
-            v-for="block in selectedBlocks" 
-            :key="'preview-' + block.id" 
-            class="preview-block"
-          >
+          <div v-for="block in selectedBlocks" :key="'preview-' + block.id" class="preview-block">
             <div v-if="componentMap[block.component]">
-              <component 
-                :is="componentMap[block.component]" 
-                :block="block"
-              />
+              <component :is="componentMap[block.component]" :block="block" />
             </div>
             <div v-else class="component-missing">
               Компонент "{{ block.component }}" не найден
@@ -78,11 +55,7 @@
       </div>
 
       <div class="save-section">
-        <button 
-          class="save-btn"
-          @click="saveLanding"
-          :disabled="selectedBlocks.length === 0 || saving"
-        >
+        <button class="save-btn" @click="saveLanding" :disabled="selectedBlocks.length === 0 || saving">
           <span v-if="!saving">Сохранить лендинг</span>
           <span v-else>Сохранение...</span>
         </button>
@@ -102,11 +75,11 @@
 <script lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { 
-  fetchTemplateById, 
+import {
+  fetchTemplateById,
   fetchTemplateBlocks,
   createLanding,
-  saveLandingBlocks 
+  saveLandingBlocks
 } from '@/services/api';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
@@ -124,29 +97,24 @@ export default {
     const router = useRouter();
     const templateId = Number(route.params.templateId);
 
-    // Данные
     const template = ref<Template | null>(null);
     const blocks = ref<TemplateBlock[]>([]);
     const selectedBlockIds = ref<number[]>([]);
     const loading = ref(true);
     const error = ref('');
 
-    // Состояние сохранения
     const saving = ref(false);
     const saveError = ref('');
     const saveSuccess = ref(false);
 
-    // Выбранные блоки для предпросмотра
     const selectedBlocks = computed(() => {
       return blocks.value.filter(block => selectedBlockIds.value.includes(block.id));
     });
 
-    // Проверка выбран ли блок
     const isBlockSelected = (id: number) => {
       return selectedBlockIds.value.includes(id);
     };
 
-    // Перемещение блока вверх
     const moveBlockUp = (index: number) => {
       if (index > 0) {
         const newBlocks = [...blocks.value];
@@ -155,7 +123,6 @@ export default {
       }
     };
 
-    // Перемещение блока вниз
     const moveBlockDown = (index: number) => {
       if (index < blocks.value.length - 1) {
         const newBlocks = [...blocks.value];
@@ -164,7 +131,6 @@ export default {
       }
     };
 
-    // Сохранение лендинга
     const saveLanding = async () => {
       try {
         saving.value = true;
@@ -175,12 +141,10 @@ export default {
           throw new Error('Шаблон не загружен');
         }
 
-        // Создаем лендинг
         const { id: landingId } = await createLanding(template.value.id.toString());
-        
-        // Сохраняем блоки
+
         await saveLandingBlocks(
-          landingId, 
+          landingId,
           selectedBlocks.value
         );
 
@@ -198,21 +162,20 @@ export default {
       }
     };
 
-    // Загрузка данных
     const loadData = async () => {
       try {
         loading.value = true;
         error.value = '';
-        
+
         const [templateData, blocksData] = await Promise.all([
           fetchTemplateById(templateId),
           fetchTemplateBlocks(templateId)
         ]);
-        
+
         template.value = templateData;
         blocks.value = blocksData;
         selectedBlockIds.value = blocksData.map(block => block.id);
-        
+
       } catch (err) {
         error.value = 'Не удалось загрузить данные';
         console.error('Ошибка загрузки:', err);

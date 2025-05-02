@@ -28,11 +28,10 @@ const generateRandomString = (length = 16) => {
     return Math.random().toString(36).substring(2, length + 2);
 };
 
-// Обновлённая функция генерации токенов
 const generateTokens = (adminId) => {
     const payload = {
         id: adminId,
-        session: generateRandomString(), // Используем нашу функцию
+        session: generateRandomString(),
         iat: Math.floor(Date.now() / 1000)
     };
 
@@ -513,14 +512,14 @@ app.post('/api/admin/login', async (req, res) => {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 10000 // 10 секунд
+            maxAge: 10000
         });
 
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 дней
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
 
         res.json({ success: true });
@@ -558,7 +557,6 @@ app.post('/api/admin/refresh', async (req, res) => {
     }
 });
 
-// Выход
 app.post('/api/admin/logout', (req, res) => {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
