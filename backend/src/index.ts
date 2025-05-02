@@ -4,6 +4,7 @@ import { pool } from './db';
 import cookieParser from 'cookie-parser';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import setupSwagger from './swagger';
 
 const app = express();
 const PORT = 3001;
@@ -63,6 +64,428 @@ const authenticateJWT = (req: any, res: any, next: any) => {
         res.sendStatus(401);
     }
 };
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     cookieAuth:
+ *       type: apiKey
+ *       in: cookie
+ *       name: accessToken
+ *   schemas:
+ *     Admin:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         username:
+ *           type: string
+ *     Template:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *     Landing:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *         template_id:
+ *           type: integer
+ *     Block:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         type:
+ *           type: string
+ *         component:
+ *           type: string
+ *         position:
+ *           type: integer
+ *     Error:
+ *       type: object
+ *       properties:
+ *         error:
+ *           type: string
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   - name: Auth
+ *     description: Аутентификация администратора
+ *   - name: Templates
+ *     description: Управление шаблонами лендингов
+ *   - name: Landings
+ *     description: Управление лендингами
+ */
+
+/**
+ * @swagger
+ * /api/admin/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Вход администратора
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required: [username, password]
+ *     responses:
+ *       200:
+ *         description: Успешный вход
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: Неверные учетные данные
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Ошибка сервера
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/admin/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Обновление токена доступа
+ *     responses:
+ *       200:
+ *         description: Токен обновлен
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               type: string
+ *       401:
+ *         description: Не авторизован
+ *       403:
+ *         description: Недействительный refresh token
+ */
+
+/**
+ * @swagger
+ * /api/admin/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Выход из системы
+ *     responses:
+ *       200:
+ *         description: Успешный выход
+ */
+
+/**
+ * @swagger
+ * /api/admin/data:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Защищенные данные
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Успешный запрос
+ *       401:
+ *         description: Не авторизован
+ *       403:
+ *         description: Доступ запрещен
+ */
+
+/**
+ * @swagger
+ * /api/templates:
+ *   get:
+ *     tags: [Templates]
+ *     summary: Получить все шаблоны с блоками
+ *     responses:
+ *       200:
+ *         description: Список шаблонов
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Template'
+ *       500:
+ *         description: Ошибка сервера
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/templates/{id}:
+ *   get:
+ *     tags: [Templates]
+ *     summary: Получить шаблон по ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Данные шаблона
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Template'
+ *       404:
+ *         description: Шаблон не найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Ошибка сервера
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/template-blocks/{templateId}:
+ *   get:
+ *     tags: [Templates]
+ *     summary: Получить блоки шаблона
+ *     parameters:
+ *       - name: templateId
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Список блоков шаблона
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Block'
+ *       500:
+ *         description: Ошибка сервера
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+
+/**
+ * @swagger
+ * /api/landings:
+ *   get:
+ *     tags: [Landings]
+ *     summary: Получить все лендинги
+ *     responses:
+ *       200:
+ *         description: Список лендингов
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Landing'
+ *       500:
+ *         description: Ошибка при получении лендингов
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   post:
+ *     tags: [Landings]
+ *     summary: Создать новый лендинг
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               template_id:
+ *                 type: integer
+ *             required: [template_id]
+ *     responses:
+ *       200:
+ *         description: Лендинг создан
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *       500:
+ *         description: Ошибка при создании лендинга
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/landings/{id}:
+ *   get:
+ *     tags: [Landings]
+ *     summary: Получить лендинг по ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Данные лендинга с блоками
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 template_id:
+ *                   type: integer
+ *                 blocks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Block'
+ *       404:
+ *         description: Лендинг не найден
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Ошибка сервера
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/landings/{id}/blocks:
+ *   get:
+ *     tags: [Landings]
+ *     summary: Получить блоки лендинга
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Список блоков лендинга
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Block'
+ *       500:
+ *         description: Ошибка при получении блоков лендинга
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *   post:
+ *     tags: [Landings]
+ *     summary: Сохранить блоки лендинга
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               blocks:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Block'
+ *             required: [blocks]
+ *     responses:
+ *       200:
+ *         description: Блоки сохранены
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       500:
+ *         description: Ошибка при сохранении блоков
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+
+/**
+ * @swagger
+ * /api/templates/{id}/blocks:
+ *   get:
+ *     tags: [Templates]
+ *     summary: Получить блоки шаблона
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Список блоков шаблона
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Block'
+ *       500:
+ *         description: Ошибка при получении блоков шаблона
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 
 app.post('/api/admin/login', async (req, res) => {
     const { username, password } = req.body;
@@ -313,6 +736,8 @@ app.get('/api/templates/:id/blocks', async (req, res) => {
 function generateLandingId() {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
+
+setupSwagger(app);
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
