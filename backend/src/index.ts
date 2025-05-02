@@ -56,29 +56,81 @@ app.get('/api/templates/:id', async (req, res) => {
 
 app.get('/api/template-blocks/:templateId', async (req, res) => {
     try {
-      const { templateId } = req.params;
-      const result = await pool.query(
-        'SELECT * FROM template_blocks WHERE template_id = $1 ORDER BY position',
-        [templateId]
-      );
-      res.json(result.rows);
+        const { templateId } = req.params;
+        const result = await pool.query(
+            'SELECT * FROM template_blocks WHERE template_id = $1 ORDER BY position',
+            [templateId]
+        );
+        res.json(result.rows);
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера' });
     }
 });
 
 app.get('/api/template-blocks/:templateId', async (req, res) => {
     try {
-      const { templateId } = req.params;
-      const result = await pool.query(
-        'SELECT * FROM template_blocks WHERE template_id = $1 ORDER BY position',
-        [templateId]
-      );
-      res.json(result.rows);
+        const { templateId } = req.params;
+        const result = await pool.query(
+            'SELECT * FROM template_blocks WHERE template_id = $1 ORDER BY position',
+            [templateId]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
+});
+
+app.post('/api/landings', async (req, res) => {
+    try {
+        const { template_id } = req.body;
+        const id = generateLandingId();
+
+        await pool.query(
+            'INSERT INTO landings (id, template_id) VALUES ($1, $2)',
+            [id, template_id]
+        );
+
+        res.json({ id });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка при создании лендинга' });
+    }
+});
+
+app.post('/api/landings/:id/blocks', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { blocks } = req.body;
+
+        await pool.query('BEGIN');
+
+        await pool.query('DELETE FROM landing_blocks WHERE landing_id = $1', [id]);
+
+        for (const [index, block] of blocks.entries()) {
+            await pool.query(
+                'INSERT INTO landing_blocks (landing_id, type, component, position) VALUES ($1, $2, $3, $4)',
+                [id, block.type, block.component, index]
+            );
+        }
+
+        await pool.query('COMMIT');
+        res.json({ success: true });
+    } catch (err) {
+        await pool.query('ROLLBACK');
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка при сохранении блоков' });
+    }
+});
+
+app.get('/api/landings', async (req, res) => {
+    try {
+      const { rows } = await pool.query('SELECT * FROM landings ORDER BY id DESC');
+      res.json(rows);
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: 'Ошибка сервера' });
+      res.status(500).json({ error: 'Ошибка при получении лендингов' });
     }
 });
 
@@ -86,6 +138,11 @@ app.get('/api/landings/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const landing = await pool.query('SELECT * FROM landings WHERE id = $1', [id]);
+        
+        if (landing.rows.length === 0) {
+            return res.status(404).json({ error: 'Landing not found' });
+        }
+
         const blocks = await pool.query(
             'SELECT * FROM landing_blocks WHERE landing_id = $1 ORDER BY position',
             [id]
@@ -101,33 +158,9 @@ app.get('/api/landings/:id', async (req, res) => {
     }
 });
 
-app.post('/api/landings', async (req, res) => {
-    const { templateId } = req.body;
-
-    try {
-        await pool.query('BEGIN');
-
-        const newLanding = await pool.query(
-            'INSERT INTO landings (template_id) VALUES ($1) RETURNING *',
-            [templateId]
-        );
-
-        await pool.query(`
-            INSERT INTO landing_blocks (landing_id, type, component, position)
-            SELECT $1, type, component, position 
-            FROM template_blocks 
-            WHERE template_id = $2
-        `, [newLanding.rows[0].id, templateId]);
-
-        await pool.query('COMMIT');
-
-        res.status(201).json(newLanding.rows[0]);
-    } catch (err) {
-        await pool.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ error: 'Ошибка сервера' });
-    }
-});
+function generateLandingId() {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);

@@ -1,46 +1,57 @@
 <template>
-    <div class="landings-list">
-        <TheHeader />
-        <h1>Мои лендинги</h1>
+  <div class="landings-list">
+    <TheHeader />
+    <h1>Мои лендинги</h1>
 
-        <ul>
-            <li v-for="landing in landings" :key="landing.id">
-                <RouterLink :to="`/landings/${landing.id}`">Лендинг ID: {{ landing.id }}</RouterLink>
-            </li>
-        </ul>
+    <div v-if="loading" class="loading">Загрузка...</div>
+    <div v-else-if="error" class="error">{{ error }}</div>
+    
+    <ul v-else>
+      <li v-for="landing in landings" :key="landing.id">
+        <RouterLink :to="`/landings/${landing.id}`">
+          Лендинг #{{ landing.id }} (Шаблон: {{ landing.template_id }})
+        </RouterLink>
+      </li>
+    </ul>
 
-        <TheFooter />
-    </div>
+    <TheFooter />
+  </div>
 </template>
 
 <script lang="ts">
 import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { fetchAllLandings } from '@/services/api';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
 
 export default {
-    name: 'LandingsList',
-    components: {
-        TheHeader,
-        TheFooter,
-    },
-    setup() {
-        const landings = ref([]);
+  name: 'LandingsList',
+  components: {
+    TheHeader,
+    TheFooter,
+  },
+  setup() {
+    const landings = ref([]);
+    const loading = ref(true);
+    const error = ref('');
 
-        const fetchLandings = async () => {
-            try {
-                const res = await axios.get('http://localhost:3000/landings');
-                landings.value = res.data;
-            } catch (err) {
-                console.error('Ошибка при загрузке лендингов:', err);
-            }
-        };
+    const fetchLandings = async () => {
+      try {
+        loading.value = true;
+        error.value = '';
+        landings.value = await fetchAllLandings();
+      } catch (err) {
+        error.value = 'Ошибка при загрузке лендингов';
+        console.error(err);
+      } finally {
+        loading.value = false;
+      }
+    };
 
-        onMounted(fetchLandings);
+    onMounted(fetchLandings);
 
-        return { landings };
-    },
+    return { landings, loading, error };
+  },
 };
 </script>
 

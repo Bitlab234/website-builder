@@ -76,6 +76,23 @@
           </div>
         </div>
       </div>
+
+      <div class="save-section">
+        <button 
+          class="save-btn"
+          @click="saveLanding"
+          :disabled="selectedBlocks.length === 0 || saving"
+        >
+          <span v-if="!saving">Сохранить лендинг</span>
+          <span v-else>Сохранение...</span>
+        </button>
+        <div v-if="saveSuccess" class="save-success">
+          Лендинг успешно сохранен!
+        </div>
+        <div v-if="saveError" class="save-error">
+          {{ saveError }}
+        </div>
+      </div>
     </template>
 
     <TheFooter />
@@ -84,8 +101,13 @@
 
 <script lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { fetchTemplateById, fetchTemplateBlocks } from '@/services/api';
+import { useRoute, useRouter } from 'vue-router';
+import { 
+  fetchTemplateById, 
+  fetchTemplateBlocks,
+  createLanding,
+  saveLandingBlocks 
+} from '@/services/api';
 import TheHeader from '@/pages/templates/TheHeader.vue';
 import TheFooter from '@/pages/templates/TheFooter.vue';
 import { componentMap } from '@/utils/componentMap';
@@ -99,6 +121,7 @@ export default {
   },
   setup() {
     const route = useRoute();
+    const router = useRouter();
     const templateId = Number(route.params.templateId);
 
     // Данные
@@ -107,6 +130,11 @@ export default {
     const selectedBlockIds = ref<number[]>([]);
     const loading = ref(true);
     const error = ref('');
+
+    // Состояние сохранения
+    const saving = ref(false);
+    const saveError = ref('');
+    const saveSuccess = ref(false);
 
     // Выбранные блоки для предпросмотра
     const selectedBlocks = computed(() => {
@@ -133,6 +161,40 @@ export default {
         const newBlocks = [...blocks.value];
         [newBlocks[index], newBlocks[index + 1]] = [newBlocks[index + 1], newBlocks[index]];
         blocks.value = newBlocks;
+      }
+    };
+
+    // Сохранение лендинга
+    const saveLanding = async () => {
+      try {
+        saving.value = true;
+        saveError.value = '';
+        saveSuccess.value = false;
+
+        if (!template.value) {
+          throw new Error('Шаблон не загружен');
+        }
+
+        // Создаем лендинг
+        const { id: landingId } = await createLanding(template.value.id.toString());
+        
+        // Сохраняем блоки
+        await saveLandingBlocks(
+          landingId, 
+          selectedBlocks.value
+        );
+
+        saveSuccess.value = true;
+
+        setTimeout(() => {
+          router.push('/LandingsList');
+        }, 1000);
+
+      } catch (err) {
+        saveError.value = err.message || 'Ошибка при сохранении лендинга';
+        console.error('Ошибка сохранения:', err);
+      } finally {
+        saving.value = false;
       }
     };
 
@@ -168,10 +230,14 @@ export default {
       selectedBlocks,
       loading,
       error,
+      saving,
+      saveError,
+      saveSuccess,
       componentMap,
       isBlockSelected,
       moveBlockUp,
-      moveBlockDown
+      moveBlockDown,
+      saveLanding
     };
   }
 };
